@@ -38,9 +38,9 @@ app.post('/signup', async (req, res) => {
         // hash password
         const hashedPassword = await bcrypt.hash(password, 10);
 
-        // save user to database
-        const query = 'INSERT INTO users (email, password) VALUES (?, ?)';
-        await db.run(query, [email, hashedPassword]);
+        // save user to database with admin set to false for new users.
+        const query = 'INSERT INTO users (email, password, isAdmin) VALUES (?, ?, ?)';
+        await db.run(query, [email, hashedPassword, false]); // create admin user directly in database later
         res.status(201).json({ message: messages.signupSuccessful });
     } catch (error) {
         console.error(error);
