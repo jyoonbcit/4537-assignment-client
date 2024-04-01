@@ -23,14 +23,31 @@ app.get('/login', (req, res) => {
     res.render('login', { title: 'Login' });
 });
 
+
 // POST requests
-app.post('/signup', (req, res) => {
+app.post('/signup', async (req, res) => {
     // TODO: Connect this to a database
-    res.send(`
-        Signup successful
-        <a href="/">Home</a>
-    `);
+    const { email, password } = req.body;
+    // check if email exists
+    try {
+        const existingUser = await db.get('SELECT * FROM users WHERE email = ?', [email]);
+        if (existingUser) {
+            return res.status(400).json({ error: messages.userExists });
+        }
+
+        // hash password
+        const hashedPassword = await bcrypt.hash(password, 10);
+
+        // save user to database
+        const query = 'INSERT INTO users (email, password) VALUES (?, ?)';
+        await db.run(query, [email, hashedPassword]);
+        res.status(201).json({ message: messages.signupSuccessful });
+    } catch (error) {
+        console.error(error);
+        return res.status(500).json({ error: messages.insertionError + error.message });
+    }
 });
+
 
 app.post('/login', async (req, res) => {
     const { email, password } = req.body;
