@@ -1,5 +1,5 @@
-const messages = require('./en/lang/messages/user');
 // Imports
+const messages = require('./en/lang/messages/user');
 const express = require('express');
 const session = require('express-session');
 const app = express();
@@ -16,13 +16,20 @@ dotenv.config();
 
 // Setup session
 app.use(session({
+        cookieName: 'session',
         secret: process.env.SESSION_SECRET,
         resave: false,
         saveUninitialized: true,
         store: new MongoDBStore({
-            uri: process.env.MONGODB_URI,
+            uri: process.env.MONGODB_CONNECTION_STRING,
             collection: 'sessions'
-        })
+        }),
+        cookie: {
+            maxAge: 60 * 60, // 1 hour
+            httpOnly: true,
+            secure: true,
+            ephemeral: true
+        }
     }
 ));
 
@@ -72,22 +79,28 @@ app.get('/getAllUserAPI', async (req, res) => {
 
 // POST requests
 app.post('/signup', async (req, res) => {
-    // TODO: Connect this to a database
     const { name, email, password } = req.body;
-    // check if email exists
     try {
-        const existingUser = await db.get('SELECT * FROM users WHERE email = ?', [email]);
-        if (existingUser) {
-            return res.status(400).json({ error: messages.userExists });
-        }
+        usersModel.findOne({ email: email }, async (err, doc) => {
+            if (err) {
+                return res.status(500).json({ error: messages.internalServerError + err.message });
+            }
+            if (doc) {
+                return res.status(400).json({ error: messages.userExists });
+            }
 
-        // hash password
-        const hashedPassword = await bcrypt.hash(password, 10);
+            const hashedPassword = await bcrypt.hash(password, 10);
+            const newUser = new usersModel({
+                name,
+                email,
+                password: hashedPassword,
+                isAdmin: false,
+                api_requests: 0
+            });
 
-        // save user to database with admin set to false for new users.
-        const query = 'INSERT INTO users (name, email, password, isAdmin, api_usage) VALUES (?, ?, ?, ?, ?)';
-        await db.run(query, [name, email, hashedPassword, false, 0]); // create admin user directly in database later
-        res.status(201).json({ message: messages.signupSuccessful });
+            await newUser.save();
+            res.status(201).json({ message: messages.signupSuccessful });
+        })
     } catch (error) {
         console.error(error);
         return res.status(500).json({ error: messages.insertionError + error.message });
@@ -125,6 +138,10 @@ app.post('/login', async (req, res) => {
 });
 
 
-app.listen(3000, () => {
-    console.log('Server is running on port 3000');
-});
+async function main() {
+    await mongoose.connect(process.env.MONGODB_CONNECTION_STRING);
+    console.log("Connected to db.");
+    app.listen(process.env.PORT || 3000, () => {
+        console.log('Server is running!')
+    })
+} main().catch(err => console.log(err));
