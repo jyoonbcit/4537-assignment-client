@@ -1,7 +1,6 @@
 // Imports
 const messages = require('./en/lang/messages/user');
 const express = require('express');
-const session = require('express-session');
 const app = express();
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
@@ -11,31 +10,11 @@ const bcrypt = require('bcrypt');
 const jwt = require('jsonwebtoken');
 const usersModel = require('./models/users');
 const sanitize = require('mongo-sanitize');
-var MongoDBStore = require('connect-mongodb-session')(session);
 const mongoose = require('mongoose');
 // TODO: Setup environment variables
 const dotenv = require('dotenv');
 dotenv.config();
 
-
-// // Setup session
-// app.use(session({
-//     cookieName: 'session',
-//     secret: process.env.SESSION_SECRET,
-//     resave: false,
-//     saveUninitialized: true,
-//     store: new MongoDBStore({
-//         uri: process.env.MONGODB_CONNECTION_STRING,
-//         collection: 'sessions'
-//     }),
-//     cookie: {
-//         maxAge: 60 * 60, // 1 hour
-//         httpOnly: true,
-//         secure: true,
-//         ephemeral: true
-//     }
-// }
-// ));
 
 // GET requests
 app.get('/', (req, res) => {
