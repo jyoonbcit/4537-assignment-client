@@ -23,6 +23,35 @@ app.get('/login', (req, res) => {
     res.render('login', { title: 'Login' });
 });
 
+app.get('/admin', (req, res) => {
+    res.render('admin', { title: 'Admin' });
+});
+
+app.get('/user', (req, res) => {
+    res.render('admin', { title: 'Admin' });
+});
+
+app.get('/getAllUserAPI', async (req, res) => {
+    try {
+        // check if user is admin
+        const { email } = req.body;
+        const isAdminRow = await db.get('SELECT isAdmin FROM users WHERE email = ?', [email]);
+
+        if (!isAdminRow || !isAdminRow.isAdmin) {
+            return res.status(403).json({ error: messages.notAdmin });
+        }
+
+        const query = 'SELECT name, email, api_usage FROM users'; // add api_usage and name to database
+        const allUsers = await db.all(query);
+
+        res.json(allUsers);
+    } catch (error) {
+        console.error(error);
+        res.status(500).json({ error: messages.internalServerError + error.message });
+    }
+});
+
+
 
 // POST requests
 app.post('/signup', async (req, res) => {
