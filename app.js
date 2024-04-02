@@ -20,21 +20,21 @@ dotenv.config();
 
 // Setup session
 app.use(session({
-        cookieName: 'session',
-        secret: process.env.SESSION_SECRET,
-        resave: false,
-        saveUninitialized: true,
-        store: new MongoDBStore({
-            uri: process.env.MONGODB_CONNECTION_STRING,
-            collection: 'sessions'
-        }),
-        cookie: {
-            maxAge: 60 * 60, // 1 hour
-            httpOnly: true,
-            secure: true,
-            ephemeral: true
-        }
+    cookieName: 'session',
+    secret: process.env.SESSION_SECRET,
+    resave: false,
+    saveUninitialized: true,
+    store: new MongoDBStore({
+        uri: process.env.MONGODB_CONNECTION_STRING,
+        collection: 'sessions'
+    }),
+    cookie: {
+        maxAge: 60 * 60, // 1 hour
+        httpOnly: true,
+        secure: true,
+        ephemeral: true
     }
+}
 ));
 
 // GET requests
@@ -90,9 +90,17 @@ app.post('/signup', async (req, res) => {
     const sanitizedPassword = sanitize(password);
 
     try {
-        const existingUser = await usersModel.findOne({ email: sanitizedEmail }).exec();
+        const existingUser = await usersModel.findOne({ user: sanitizedUsername }).exec();
         if (existingUser) {
-            return res.status(409).json({ error: messages.userExists });
+            return res.send(`
+                <h1> ${messages.userExists} </h1>
+            `);
+        }
+        const existingEmail = await users.Model.findOne({ email: sanitizedEmail }).exec();
+        if (existingEmail) {
+            return res.send(`
+                <h1> ${messages.emailExists} </h1>
+            `);
         }
         const hashedPassword = await bcrypt.hash(sanitizedPassword, 10);
         const newUser = new usersModel({
@@ -106,7 +114,10 @@ app.post('/signup', async (req, res) => {
         res.redirect('/loginsuccess');
     } catch (error) {
         console.error(error);
-        return res.status(500).json({ error: messages.insertionError + error.message });
+        res.send(`
+        <h1> ${messages.insertionError} ${error.message}</h1>
+        `)
+        return;
     }
 });
 

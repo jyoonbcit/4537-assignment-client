@@ -6,7 +6,8 @@ const message = {
     "internalServerError": "Internal server error",
     "userExists": "User already exists",
     "insertionError": "An error occurred during insertion: ",
-    "signupSuccessful": "Signup successful"
+    "signupSuccessful": "Signup successful",
+    "emailExists": "Email already exists",
 };
 
 module.exports = message;
