@@ -1,6 +1,7 @@
 // Imports
 const messages = require('./en/lang/messages/user');
 const express = require('express');
+const session = require('express-session');
 const app = express();
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
@@ -101,19 +102,21 @@ app.post('/signup', async (req, res) => {
 
 app.post('/login', async (req, res) => {
     const { email, password } = req.body;
+    const sanitizedEmail = sanitize(email);
+    const sanitizedPassword = sanitize(password);
 
     try {
-        const result = await usersModel.findOne({ email: req.body.email });
+        const result = await usersModel.findOne({ email: sanitizedEmail }).exec();
         console.log(result);
         if (result === null) {
             res.send(`
             <h1> ${messages.userNotFound} </h1>
             <a href='/login'> ${messages.tryAgain} </a>
         `);
-        } else if (bcrypt.compareSync(password, result?.password)) {
+        } else if (bcrypt.compareSync(sanitizedPassword, result?.password)) {
             // If password matches, generate JWT token
             const token = jwt.sign({
-                email: email,
+                email: sanitizedEmail,
                 name: result.name,
                 type: result.type
             }, process.env.SESSION_SECRET, { expiresIn: '1h' }); // Token expires in 1 hour
