@@ -31,6 +31,7 @@ app.get('/user', (req, res) => {
     res.render('admin', { title: 'Admin' });
 });
 
+//TODO increment api_usage in database when user uses api
 app.get('/getAllUserAPI', async (req, res) => {
     try {
         // check if user is admin
