@@ -3,11 +3,13 @@ const messages = require('./en/lang/messages/user');
 const express = require('express');
 const session = require('express-session');
 const app = express();
+app.use(express.json());
 app.set('view engine', 'ejs');
 // TODO: For hashing passwords in the database
 const bcrypt = require('bcrypt');
 const usersModel = require('./models/users');
 var MongoDBStore = require('connect-mongodb-session')(session);
+const mongoose = require('mongoose');
 // TODO: Setup environment variables
 const dotenv = require('dotenv');
 dotenv.config();
@@ -79,28 +81,23 @@ app.get('/getAllUserAPI', async (req, res) => {
 
 // POST requests
 app.post('/signup', async (req, res) => {
-    const { name, email, password } = req.body;
+    console.log(req.body);
+    const { username, email, password } = req.body;
     try {
-        usersModel.findOne({ email: email }, async (err, doc) => {
-            if (err) {
-                return res.status(500).json({ error: messages.internalServerError + err.message });
-            }
-            if (doc) {
-                return res.status(400).json({ error: messages.userExists });
-            }
-
-            const hashedPassword = await bcrypt.hash(password, 10);
-            const newUser = new usersModel({
-                name,
-                email,
-                password: hashedPassword,
-                isAdmin: false,
-                api_requests: 0
-            });
-
-            await newUser.save();
-            res.status(201).json({ message: messages.signupSuccessful });
-        })
+        const existingUser = await usersModel.findOne({ email: email }).exec();
+        if (existingUser) {
+            return res.status(409).json({ error: messages.userExists });
+        }
+        const hashedPassword = await bcrypt.hash(password, 10);
+        const newUser = new usersModel({
+            username,
+            email,
+            password: hashedPassword,
+            isAdmin: false,
+            api_requests: 0
+        });
+        await newUser.save();
+        res.status(201).json({ message: messages.signupSuccessful });
     } catch (error) {
         console.error(error);
         return res.status(500).json({ error: messages.insertionError + error.message });
