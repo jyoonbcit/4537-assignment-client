@@ -5,7 +5,8 @@ const message = {
     "loginError": "An error occurred during login: ",
     "internalServerError": "Internal server error",
     "userExists": "User already exists",
-    "insertionError": "An error occurred during insertion: "
+    "insertionError": "An error occurred during insertion: ",
+    "signupSuccessful": "Signup successful"
 };
 
 module.exports = message;
