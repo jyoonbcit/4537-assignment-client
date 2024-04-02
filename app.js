@@ -8,6 +8,7 @@ app.use(express.urlencoded({ extended: true }));
 app.set('view engine', 'ejs');
 // TODO: For hashing passwords in the database
 const bcrypt = require('bcrypt');
+const jwt = require('jsonwebtoken');
 const usersModel = require('./models/users');
 const sanitize = require('mongo-sanitize');
 var MongoDBStore = require('connect-mongodb-session')(session);
@@ -126,28 +127,35 @@ app.post('/login', async (req, res) => {
     const { email, password } = req.body;
 
     try {
-        const query = 'SELECT * FROM users WHERE email = ?';
-        const row = await db.get(query, [email]);
+        const result = await usersModel.findOne({ email: req.body.email });
+        console.log(result);
+        if (result === null) {
+            res.send(`
+            <h1> ${messages.userNotFound} </h1>
+            <a href='/login'> ${messages.tryAgain} </a>
+        `);
+        } else if (bcrypt.compareSync(req.body.password, result?.password)) {
+            // If password matches, generate JWT token
+            const token = jwt.sign({
+                email: req.body.email,
+                name: result.name,
+                type: result.type
+            }, secret, { expiresIn: '1h' }); // Token expires in 1 hour
 
-        if (row === undefined) {
-            return res.status(404).json({ error: messages.userNotFound });
+            // Set JWT token as a cookie
+            res.cookie('jwt', token, { httpOnly: true, maxAge: 3600000 }); // Max age 1 hour
+
+            res.redirect('/members'); // redirect to members page or change to whatever page you want
+        } else {
+            res.send(`
+            <h1> ${messages.incorrectPassword} </h1>
+            <a href='/login'> ${messages.tryAgain} </a>
+        `);
         }
-
-        const user = row;
-
-        const isPasswordCorrect = await bcrypt.compare(password, user.password);
-        if (!isPasswordCorrect) {
-            return res.status(401).json({ error: messages.incorrectPassword });
-        }
-
-        const token = jwt.sign({ id: user.id }, process.env.SECRET_KEY, { expiresIn: '1h' });
-        res.cookie('token', token, { httpOnly: true, secure: true });
-
-        res.status(200).json({ message: messages.loginSuccessful, user });
-
     } catch (error) {
-        console.error(error);
-        res.status(500).json({ error: messages.loginError + error.message });
+        console.log(err);
+        <h1> ${messages.loginError} ${error.message}</h1>
+
     }
 });
 

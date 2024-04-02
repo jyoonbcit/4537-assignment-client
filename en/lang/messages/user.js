@@ -8,6 +8,7 @@ const message = {
     "insertionError": "An error occurred during insertion: ",
     "signupSuccessful": "Signup successful",
     "emailExists": "Email already exists",
+    "tryAgain": "Please try again",
 };
 
 module.exports = message;
