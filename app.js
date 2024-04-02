@@ -54,8 +54,8 @@ app.get('/admin', (req, res) => {
     res.render('admin', { title: 'Admin' });
 });
 
-app.get('/user', (req, res) => {
-    res.render('admin', { title: 'Admin' });
+app.get('/loginsuccess', (req, res) => {
+    res.render('loginsuccess', { messages: messages });
 });
 
 //TODO increment api_usage in database when user uses api
@@ -103,7 +103,7 @@ app.post('/signup', async (req, res) => {
             api_requests: 0
         });
         await newUser.save();
-        res.status(201).json({ message: messages.signupSuccessful });
+        res.redirect('/loginsuccess');
     } catch (error) {
         console.error(error);
         return res.status(500).json({ error: messages.insertionError + error.message });
