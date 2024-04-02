@@ -123,8 +123,13 @@ app.post('/login', async (req, res) => {
 
             // Set JWT token as a cookie
             res.cookie('jwt', token, { httpOnly: true, maxAge: 3600000 }); // Max age 1 hour
+            console.log(result.isAdmin);
+            if (result.isAdmin) {
+                res.redirect('/admin');
 
-            res.redirect('/members'); // redirect to members page or change to whatever page you want
+            } else {
+                res.redirect('/members'); // redirect to members page or change to whatever page you want
+            }
         } else {
             res.send(`
             <h1> ${messages.incorrectPassword} </h1>
