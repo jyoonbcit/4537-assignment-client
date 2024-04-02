@@ -154,7 +154,11 @@ app.post('/login', async (req, res) => {
         }
     } catch (error) {
         console.log(err);
+        res.send(`
         <h1> ${messages.loginError} ${error.message}</h1>
+        `)
+        return;
+
 
     }
 });
