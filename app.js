@@ -1,13 +1,29 @@
 // Imports
 const express = require('express');
+const session = require('express-session');
 const app = express();
 app.set('view engine', 'ejs');
 // TODO: For hashing passwords in the database
 const bcrypt = require('bcrypt');
+const usersModel = require('./models/users');
+var MongoDBStore = require('connect-mongodb-session')(session);
 // TODO: Setup environment variables
 const dotenv = require('dotenv');
 dotenv.config();
 
+// TODO: Add input validation, maybe using Joi
+
+// Setup session
+app.use(session({
+        secret: process.env.SESSION_SECRET,
+        resave: false,
+        saveUninitialized: true,
+        store: new MongoDBStore({
+            uri: process.env.MONGODB_URI,
+            collection: 'sessions'
+        })
+    }
+));
 
 // GET requests
 app.get('/', (req, res) => {
