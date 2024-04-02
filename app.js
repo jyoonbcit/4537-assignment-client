@@ -17,26 +17,25 @@ const mongoose = require('mongoose');
 const dotenv = require('dotenv');
 dotenv.config();
 
-// TODO: Add input validation, maybe using Joi
 
-// Setup session
-app.use(session({
-    cookieName: 'session',
-    secret: process.env.SESSION_SECRET,
-    resave: false,
-    saveUninitialized: true,
-    store: new MongoDBStore({
-        uri: process.env.MONGODB_CONNECTION_STRING,
-        collection: 'sessions'
-    }),
-    cookie: {
-        maxAge: 60 * 60, // 1 hour
-        httpOnly: true,
-        secure: true,
-        ephemeral: true
-    }
-}
-));
+// // Setup session
+// app.use(session({
+//     cookieName: 'session',
+//     secret: process.env.SESSION_SECRET,
+//     resave: false,
+//     saveUninitialized: true,
+//     store: new MongoDBStore({
+//         uri: process.env.MONGODB_CONNECTION_STRING,
+//         collection: 'sessions'
+//     }),
+//     cookie: {
+//         maxAge: 60 * 60, // 1 hour
+//         httpOnly: true,
+//         secure: true,
+//         ephemeral: true
+//     }
+// }
+// ));
 
 // GET requests
 app.get('/', (req, res) => {
