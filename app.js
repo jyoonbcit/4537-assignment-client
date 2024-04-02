@@ -98,7 +98,6 @@ app.post('/signup', async (req, res) => {
             api_requests: 0
         });
         await newUser.save();
-        console.log("User saved successfully:", newUser);
         res.status(201).json({ message: messages.signupSuccessful });
     } catch (error) {
         console.error(error);
