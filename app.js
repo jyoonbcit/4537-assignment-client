@@ -56,7 +56,7 @@ app.get('/getAllUserAPI', async (req, res) => {
 // POST requests
 app.post('/signup', async (req, res) => {
     // TODO: Connect this to a database
-    const { email, password } = req.body;
+    const { name, email, password } = req.body;
     // check if email exists
     try {
         const existingUser = await db.get('SELECT * FROM users WHERE email = ?', [email]);
@@ -68,8 +68,8 @@ app.post('/signup', async (req, res) => {
         const hashedPassword = await bcrypt.hash(password, 10);
 
         // save user to database with admin set to false for new users.
-        const query = 'INSERT INTO users (email, password, isAdmin) VALUES (?, ?, ?)';
-        await db.run(query, [email, hashedPassword, false]); // create admin user directly in database later
+        const query = 'INSERT INTO users (name, email, password, isAdmin, api_usage) VALUES (?, ?, ?, ?, ?)';
+        await db.run(query, [name, email, hashedPassword, false, 0]); // create admin user directly in database later
         res.status(201).json({ message: messages.signupSuccessful });
     } catch (error) {
         console.error(error);
