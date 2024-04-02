@@ -4,6 +4,7 @@ const express = require('express');
 const session = require('express-session');
 const app = express();
 app.use(express.json());
+app.use(express.urlencoded({ extended: true }));
 app.set('view engine', 'ejs');
 // TODO: For hashing passwords in the database
 const bcrypt = require('bcrypt');
@@ -81,7 +82,7 @@ app.get('/getAllUserAPI', async (req, res) => {
 
 // POST requests
 app.post('/signup', async (req, res) => {
-    console.log(req.body);
+    // TODO: Validation
     const { username, email, password } = req.body;
     try {
         const existingUser = await usersModel.findOne({ email: email }).exec();
@@ -97,6 +98,7 @@ app.post('/signup', async (req, res) => {
             api_requests: 0
         });
         await newUser.save();
+        console.log("User saved successfully:", newUser);
         res.status(201).json({ message: messages.signupSuccessful });
     } catch (error) {
         console.error(error);
