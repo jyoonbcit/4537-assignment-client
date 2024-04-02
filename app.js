@@ -9,6 +9,7 @@ app.set('view engine', 'ejs');
 // TODO: For hashing passwords in the database
 const bcrypt = require('bcrypt');
 const usersModel = require('./models/users');
+const sanitize = require('mongo-sanitize');
 var MongoDBStore = require('connect-mongodb-session')(session);
 const mongoose = require('mongoose');
 // TODO: Setup environment variables
@@ -84,15 +85,19 @@ app.get('/getAllUserAPI', async (req, res) => {
 app.post('/signup', async (req, res) => {
     // TODO: Validation
     const { username, email, password } = req.body;
+    const sanitizedUsername = sanitize(username);
+    const sanitizedEmail = sanitize(email);
+    const sanitizedPassword = sanitize(password);
+
     try {
-        const existingUser = await usersModel.findOne({ email: email }).exec();
+        const existingUser = await usersModel.findOne({ email: sanitizedEmail }).exec();
         if (existingUser) {
             return res.status(409).json({ error: messages.userExists });
         }
-        const hashedPassword = await bcrypt.hash(password, 10);
+        const hashedPassword = await bcrypt.hash(sanitizedPassword, 10);
         const newUser = new usersModel({
-            username,
-            email,
+            username: sanitizedUsername,
+            email: sanitizedEmail,
             password: hashedPassword,
             isAdmin: false,
             api_requests: 0
