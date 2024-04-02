@@ -39,17 +39,15 @@ app.get('/loginsuccess', (req, res) => {
 
 //TODO increment api_usage in database when user uses api
 app.get('/getAllUserAPI', async (req, res) => {
+    const { email } = req.body;
+
     try {
         // check if user is admin
-        const { email } = req.body;
-        const isAdminRow = await db.get('SELECT isAdmin FROM users WHERE email = ?', [email]);
-
-        if (!isAdminRow || !isAdminRow.isAdmin) {
+        const user = await usersModel.findOne({ email }).exec();
+        if (!user.isAdmin) {
             return res.status(403).json({ error: messages.notAdmin });
         }
-
-        const query = 'SELECT name, email, api_usage FROM users'; // add api_usage and name to database
-        const allUsers = await db.all(query);
+        const allUsers = await usersModel.find({}).exec();
 
         res.json(allUsers);
     } catch (error) {
@@ -75,7 +73,7 @@ app.post('/signup', async (req, res) => {
                 <h1> ${messages.userExists} </h1>
             `);
         }
-        const existingEmail = await users.Model.findOne({ email: sanitizedEmail }).exec();
+        const existingEmail = await usersModel.findOne({ email: sanitizedEmail }).exec();
         if (existingEmail) {
             return res.send(`
                 <h1> ${messages.emailExists} </h1>
@@ -112,13 +110,13 @@ app.post('/login', async (req, res) => {
             <h1> ${messages.userNotFound} </h1>
             <a href='/login'> ${messages.tryAgain} </a>
         `);
-        } else if (bcrypt.compareSync(req.body.password, result?.password)) {
+        } else if (bcrypt.compareSync(password, result?.password)) {
             // If password matches, generate JWT token
             const token = jwt.sign({
-                email: req.body.email,
+                email: email,
                 name: result.name,
                 type: result.type
-            }, secret, { expiresIn: '1h' }); // Token expires in 1 hour
+            }, process.env.SESSION_SECRET, { expiresIn: '1h' }); // Token expires in 1 hour
 
             // Set JWT token as a cookie
             res.cookie('jwt', token, { httpOnly: true, maxAge: 3600000 }); // Max age 1 hour
@@ -130,10 +128,10 @@ app.post('/login', async (req, res) => {
             <a href='/login'> ${messages.tryAgain} </a>
         `);
         }
-    } catch (error) {
+    } catch (err) {
         console.log(err);
         res.send(`
-        <h1> ${messages.loginError} ${error.message}</h1>
+        <h1> ${messages.loginError} </h1>
         `)
         return;
 
