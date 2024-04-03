@@ -164,7 +164,7 @@ app.post('/callAPI', async (req, res) => {
         if (!user) {
             return res.status(403).json({ error: messages.userNotFound });
         }
-        let output = await fetch(`https://4537-assignment-server.netlify.app/.netlify/functions/server?input=${apiInput}`, {
+        const output = await fetch(`https://4537-assignment-server.netlify.app/.netlify/functions/server?input=${apiInput}`, {
             method: 'GET',
             headers: {
                 'Access-Control-Allow-Origin': '*',
@@ -173,6 +173,7 @@ app.post('/callAPI', async (req, res) => {
                 'Content-Type': 'application/json',
             }
         });
+        const jsonOutput = await output.json();
         user.apiRequests++;
         await user.save();
         res.json({ output });
