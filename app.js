@@ -176,7 +176,7 @@ app.post('/callAPI', async (req, res) => {
         const jsonOutput = await output.json();
         user.apiRequests++;
         await user.save();
-        res.json({ output });
+        res.json({ jsonOutput });
     } catch (error) {
         console.error(error);
         res.status(500).json({ error: messages.internalServerError + error.message });
