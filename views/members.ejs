@@ -7,6 +7,9 @@
     </p>
     <p>Role: <%= user.isAdmin ? "Admin" : "Basic user" %>
     </p>
+    <% if (user.apiRequests > 20) { %>
+    <p>Message: You have made more than 20 API requests.</p>
+    <% } %>
     <form action="/callAPI" method="post">
         <textarea name="apiInput" id="apiInput" cols="30" rows="10" placeholder="Enter API request"></textarea>
         <br><br>
