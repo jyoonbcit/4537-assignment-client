@@ -1,10 +1,19 @@
 <% if (user) { %>
-    <h1>Welcome <%= user.username %></h1>
-    <p>Email: <%= user.email %></p>
-    <p>Total API requests made: <%= user.apiRequests %></p>
-    <p>Role: <%= user.isAdmin ? "Admin" : "Basic user" %> </p>
-<% } else { %>
-    <h1>Welcome to the members area</h1>
-    <p>Please log in to view your profile</p>
-    <a href="/login">Login</a>
-<% } %>
+    <h1>Welcome <%= user.username %>
+    </h1>
+    <p>Email: <%= user.email %>
+    </p>
+    <p>Total API requests made: <%= user.apiRequests %>
+    </p>
+    <p>Role: <%= user.isAdmin ? "Admin" : "Basic user" %>
+    </p>
+    <form action="/callAPI" method="post">
+        <textarea name="apiInput" id="apiInput" cols="30" rows="10" placeholder="Enter API request"></textarea>
+        <br><br>
+        <button type="submit">Call API</button>
+    </form>
+    <% } else { %>
+        <h1>Welcome to the members area</h1>
+        <p>Please log in to view your profile</p>
+        <a href="/login">Login</a>
+        <% } %>
