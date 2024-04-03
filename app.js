@@ -1,7 +1,9 @@
 // Imports
 const messages = require('./en/lang/messages/user');
 const express = require('express');
+const cookieParser = require('cookie-parser');
 const app = express();
+app.use(cookieParser());
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 app.set('view engine', 'ejs');
@@ -29,8 +31,13 @@ app.get('/login', (req, res) => {
     res.render('login', { title: 'Login' });
 });
 
-app.get('/admin', (req, res) => {
-    res.render('admin', { title: 'Admin' });
+// Mostly generated using ChatGPT
+app.get('/admin', async (req, res) => {
+    res.render('admin', { 
+        title: 'Admin', 
+        isAdmin: req.cookies.jwt ? jwt.verify(req.cookies.jwt, process.env.SESSION_SECRET).isAdmin : false,
+        users: await usersModel.find({}).exec()
+    });
 });
 
 app.get('/loginsuccess', (req, res) => {
@@ -85,7 +92,7 @@ app.post('/signup', async (req, res) => {
             email: sanitizedEmail,
             password: hashedPassword,
             isAdmin: false,
-            api_requests: 0
+            apiRequests: 0
         });
         await newUser.save();
         res.redirect('/loginsuccess');
@@ -105,27 +112,26 @@ app.post('/login', async (req, res) => {
     const sanitizedPassword = sanitize(password);
 
     try {
-        const result = await usersModel.findOne({ email: sanitizedEmail }).exec();
-        console.log(result);
-        if (result === null) {
+        const user = await usersModel.findOne({ email: sanitizedEmail }).exec();
+        console.log(user);
+        if (user === null) {
             res.send(`
             <h1> ${messages.userNotFound} </h1>
             <a href='/login'> ${messages.tryAgain} </a>
         `);
-        } else if (bcrypt.compareSync(sanitizedPassword, result?.password)) {
+        } else if (bcrypt.compareSync(sanitizedPassword, user?.password)) {
             // If password matches, generate JWT token
             const token = jwt.sign({
                 email: sanitizedEmail,
-                name: result.name,
-                type: result.type
+                username: user.username,
+                isAdmin: user.isAdmin
             }, process.env.SESSION_SECRET, { expiresIn: '1h' }); // Token expires in 1 hour
 
             // Set JWT token as a cookie
             res.cookie('jwt', token, { httpOnly: true, maxAge: 3600000 }); // Max age 1 hour
-            console.log(result.isAdmin);
-            if (result.isAdmin) {
+            console.log(user.isAdmin);
+            if (user.isAdmin) {
                 res.redirect('/admin');
-
             } else {
                 res.redirect('/members'); // redirect to members page or change to whatever page you want
             }
@@ -135,14 +141,12 @@ app.post('/login', async (req, res) => {
             <a href='/login'> ${messages.tryAgain} </a>
         `);
         }
-    } catch (err) {
-        console.log(err);
+    } catch (error) {
+        console.log(error);
         res.send(`
         <h1> ${messages.loginError} </h1>
         `)
         return;
-
-
     }
 });
 
