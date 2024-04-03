@@ -112,7 +112,6 @@ app.post('/signup', async (req, res) => {
     }
 });
 
-
 app.post('/login', async (req, res) => {
     const { email, password } = req.body;
     const sanitizedEmail = sanitize(email);
@@ -154,6 +153,32 @@ app.post('/login', async (req, res) => {
         <h1> ${messages.loginError} </h1>
         `)
         return;
+    }
+});
+
+app.post('/callAPI', async (req, res) => {
+    const { apiInput } = req.body;
+
+    try {
+        const user = await usersModel.findOne({ email: jwt.verify(req.cookies.jwt, process.env.SESSION_SECRET).email }).exec();
+        if (!user) {
+            return res.status(403).json({ error: messages.userNotFound });
+        }
+        await fetch(`https://4537-assignment-server.netlify.app/.netlify/functions/server?input=${apiInput}`, {
+            method: 'GET',
+            headers: {
+                'Access-Control-Allow-Origin': '*',
+                'Access-Control-Allow-Methods': 'OPTIONS, GET',
+                'Access-Control-Allow-Headers': 'Content-Type',
+                'Content-Type': 'application/json',
+            }
+        });
+        user.apiRequests++;
+        await user.save();
+        res.json({ message: messages.apiSuccess });
+    } catch (error) {
+        console.error(error);
+        res.status(500).json({ error: messages.internalServerError + error.message });
     }
 });
 
