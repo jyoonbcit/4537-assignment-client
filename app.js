@@ -31,6 +31,13 @@ app.get('/login', (req, res) => {
     res.render('login', { title: 'Login' });
 });
 
+app.get('/members', async (req, res) => {
+    res.render('members', { 
+        title: 'Members', 
+        user: await usersModel.findOne({ email: jwt.verify(req.cookies.jwt, process.env.SESSION_SECRET).email }).exec()
+    });
+});
+
 // Mostly generated using ChatGPT
 app.get('/admin', async (req, res) => {
     res.render('admin', { 
@@ -40,11 +47,11 @@ app.get('/admin', async (req, res) => {
     });
 });
 
-app.get('/loginsuccess', (req, res) => {
-    res.render('loginsuccess', { messages: messages });
+app.get('/signup_success', (req, res) => {
+    res.render('signup_success', { messages: messages });
 });
 
-//TODO increment api_usage in database when user uses api
+// TODO: increment api_usage in database when user uses api
 app.get('/getAllUserAPI', async (req, res) => {
     const { email } = req.body;
 
@@ -95,7 +102,7 @@ app.post('/signup', async (req, res) => {
             apiRequests: 0
         });
         await newUser.save();
-        res.redirect('/loginsuccess');
+        res.redirect('/signup_success');
     } catch (error) {
         console.error(error);
         res.send(`
