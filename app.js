@@ -54,10 +54,12 @@ app.get('/signup_success', (req, res) => {
 // TODO: increment api_usage in database when user uses api
 app.get('/getAllUserAPI', async (req, res) => {
     const { email } = req.body;
+    const sanitizedEmail = sanitize(email);
+
 
     try {
         // check if user is admin
-        const user = await usersModel.findOne({ email }).exec();
+        const user = await usersModel.findOne({ email: sanitizedEmail }).exec();
         if (!user.isAdmin) {
             return res.status(403).json({ error: messages.notAdmin });
         }
