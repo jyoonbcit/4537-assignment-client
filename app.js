@@ -253,7 +253,8 @@ app.post('/callAPI', async (req, res) => {
 async function main() {
     await mongoose.connect(process.env.MONGODB_CONNECTION_STRING);
     console.log("Connected to db.");
-    app.listen(process.env.PORT || 3000, () => {
-        console.log('Server is running!')
-    })
+    const port = process.env.PORT || 3000; // Default port 3000
+    app.listen(port, () => {
+        console.log(`Server is running on http://localhost:${port}`);
+    });
 } main().catch(err => console.log(err));
