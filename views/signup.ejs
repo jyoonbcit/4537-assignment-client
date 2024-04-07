@@ -1,6 +1,28 @@
-<form action="/signup" method="post">
-    <input type="text" name="username" placeholder="Username" required>
-    <input type="password" name="password" placeholder="Password" required>
-    <input type="email" name="email" placeholder="Email" required>
-    <button type="submit">Signup</button>
-</form>
+<%- include('templates/navbar') %>
+
+
+    <!-- <form action="/signup" method="post">
+        <input type="text" name="username" placeholder="Username" required>
+        <input type="password" name="password" placeholder="Password" required>
+        <input type="email" name="email" placeholder="Email" required>
+        <button type="submit">Signup</button>
+    </form> -->
+
+    <form action="/signup" method="post" class="p-4">
+        <div class="mb-3">
+            <label for="username" class="form-label">Username</label>
+            <input type="text" class="form-control" id="username" name="username" placeholder="Username" required>
+        </div>
+        <div class="mb-3">
+            <label for="password" class="form-label">Password</label>
+            <input type="password" class="form-control" id="password" name="password" placeholder="Password" required>
+        </div>
+        <div class="mb-3">
+            <label for="email" class="form-label">Email</label>
+            <input type="email" class="form-control" id="email" name="email" placeholder="Email" required>
+        </div>
+        <button type="submit" class="btn btn-primary">Signup</button>
+    </form>
+
+
+    <%- include('templates/footer') %>

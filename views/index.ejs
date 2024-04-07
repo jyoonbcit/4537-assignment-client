@@ -1,2 +1,23 @@
-<a href="/signup">Signup</a><br>
-<a href="/login">Login</a><br>
+<%- include('templates/navbar') %>
+
+    <div class="container mt-5">
+        <div class="jumbotron">
+            <h1 class="display-4">Welcome to Paraphraser!</h1>
+            <p class="lead">Our app takes your input text and paraphrases it, using a Hugging Face
+                model.</p>
+            <hr class="my-4">
+            <p>Ready to give it a try?</p>
+            <% if (!user) { %>
+                <p>Sign up now or log in to get started.</p>
+                <a class="btn btn-primary btn-lg" href="/signup" role="button">Sign Up</a>
+                <a class="btn btn-secondary btn-lg" href="/login" role="button">Login</a>
+                <% } else { %>
+                    <p>Welcome back, <strong>
+                            <%= user.username %>
+                        </strong>! Ready to paraphrase more text?</p>
+                    <a class="btn btn-success btn-lg" href="/members" role="button">Go to Member's Page</a>
+                    <% } %>
+        </div>
+    </div>
+
+    <%- include('templates/footer') %>

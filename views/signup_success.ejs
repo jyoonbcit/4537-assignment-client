@@ -1,10 +1,28 @@
-<h1>
-    <%= messages.signupSuccessful %>
-</h1>
+<%- include('templates/navbar') %>
 
-<script>
-    // Redirect to the login page after 3 seconds
-    setTimeout(() => {
-        window.location.href = '/login';
-    }, 3000);
-</script>
+    <div class="container text-center mt-5">
+        <h1 class="display-4">
+            <%= messages.signupSuccessful %>
+        </h1>
+        <p class="lead">Redirecting to login page in 3 seconds...</p>
+    </div>
+
+    </main>
+
+    <footer class="bg-light text-center text-lg-start">
+        <div class="text-center p-3" style="background-color: rgba(0, 0, 0, 0.2);">
+            © 2024 Summarizer: Amir Eskandari and Jas Randhawa BCIT
+        </div>
+    </footer>
+
+    <!-- Bootstrap Bundle with Popper -->
+    <script src="https://stackpath.bootstrapcdn.com/bootstrap/5.1.0/js/bootstrap.bundle.min.js"></script>
+    <script>
+        // Redirect to the login page after 3 seconds
+        setTimeout(() => {
+            window.location.href = '/login';
+        }, 3000);
+    </script>
+    </body>
+
+    </html>

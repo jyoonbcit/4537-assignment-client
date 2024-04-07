@@ -1,22 +1,35 @@
-<% if (user) { %>
-    <h1>Welcome <%= user.username %>
-    </h1>
-    <p>Email: <%= user.email %>
-    </p>
-    <p>Total API requests made: <%= user.apiRequests %>
-    </p>
-    <p>Role: <%= user.isAdmin ? "Admin" : "Basic user" %>
-    </p>
-    <% if (user.apiRequests > 20) { %>
-    <p>Message: You have made more than 20 API requests.</p>
-    <% } %>
-    <form action="/callAPI" method="post">
-        <textarea name="apiInput" id="apiInput" cols="30" rows="10" placeholder="Enter API request"></textarea>
-        <br><br>
-        <button type="submit">Call API</button>
-    </form>
-    <% } else { %>
-        <h1>Welcome to the members area</h1>
-        <p>Please log in to view your profile</p>
-        <a href="/login">Login</a>
-        <% } %>
+<%- include('templates/navbar') %>
+
+    <div class="container mt-4">
+        <% if (user) { %>
+            <h1>Welcome, <%= user.username %>
+            </h1>
+            <ul class="list-group mt-3">
+                <li class="list-group-item">Email: <%= user.email %>
+                </li>
+                <li class="list-group-item">Total API requests made: <%= user.apiRequests %>
+                </li>
+                <li class="list-group-item">Role: <%= user.isAdmin ? "Admin" : "Basic user" %>
+                </li>
+                <% if (user.apiRequests> 20) { %>
+                    <li class="list-group-item text-warning">Message: You have made more
+                        than 20 API requests.</li>
+                    <% } %>
+            </ul>
+
+            <form action="/callAPI" method="post" class="mt-4">
+                <div class="mb-3">
+                    <label for="apiInput" class="form-label">API Request</label>
+                    <textarea class="form-control" id="apiInput" name="apiInput" rows="3"
+                        placeholder="Enter API request"></textarea>
+                </div>
+                <button type="submit" class="btn btn-primary">Call API</button>
+            </form>
+            <% } else { %>
+                <h1>Welcome to the members area</h1>
+                <p>Please log in to view your profile.</p>
+                <a class="btn btn-primary" href="/login">Login</a>
+                <% } %>
+    </div>
+
+    <%- include('templates/footer') %>
