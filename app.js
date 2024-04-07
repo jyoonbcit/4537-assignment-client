@@ -21,20 +21,48 @@ const attachUserToViews = async (req, res, next) => {
     console.log("Middleware executing..."); // Debug log
     try {
         const token = req.cookies.jwt;
-        if (token) {
-            const decoded = jwt.verify(token, process.env.SESSION_SECRET);
-            const user = await usersModel.findOne({ email: decoded.email }).exec();
-            res.locals.user = user;
-            console.log("User found:", user); // Debug log
-        } else {
-            res.locals.user = null;
+        if (!token) {
             console.log("No user token found."); // Debug log
+            res.locals.user = null;
+            return next();
         }
+        const decoded = jwt.verify(token, process.env.SESSION_SECRET);
+        const user = await usersModel.findOne({ email: decoded.email }).exec();
+        res.locals.user = user;
+        console.log("User found:", user); // Debug log
     } catch (error) {
         console.error('Error verifying JWT or fetching user:', error);
         res.locals.user = null;
     }
     next();
+};
+
+const isAuthenticated = async (req, res, next) => {
+    try {
+        const token = req.cookies.jwt;
+        if (token) {
+            const decoded = jwt.verify(token, process.env.SESSION_SECRET);
+            const user = await usersModel.findOne({ email: decoded.email }).exec();
+            if (!user) {
+                return res.redirect('/');
+            }
+            req.user = user;
+            next();
+        } else {
+            return res.redirect('/');
+        }
+    } catch (error) {
+        console.error('Error verifying JWT or fetching user:', error);
+        return res.redirect('/');
+    }
+};
+
+const isAdmin = (req, res, next) => {
+    if (req.user && req.user.isAdmin) {
+        next();
+    } else {
+        return res.redirect('/');
+    }
 };
 
 
@@ -65,21 +93,23 @@ app.get('/logout', (req, res) => {
 });
 
 
-app.get('/members', async (req, res) => {
+// Use isAuthenticated middleware for routes that require authentication
+app.get('/members', isAuthenticated, async (req, res) => {
     res.render('members', {
         title: 'Members',
-        user: await usersModel.findOne({ email: jwt.verify(req.cookies.jwt, process.env.SESSION_SECRET).email }).exec()
+        user: req.user // Now directly using req.user set by the middleware
     });
 });
 
-// Mostly generated using ChatGPT
-app.get('/admin', async (req, res) => {
+// Use both isAuthenticated and isAdmin middleware for the admin route
+app.get('/admin', isAuthenticated, isAdmin, async (req, res) => {
     res.render('admin', {
         title: 'Admin',
-        isAdmin: req.cookies.jwt ? jwt.verify(req.cookies.jwt, process.env.SESSION_SECRET).isAdmin : false,
+        isAdmin: req.user.isAdmin, // req.user is guaranteed to be present and an admin
         users: await usersModel.find({}).exec()
     });
 });
+
 
 app.get('/signup_success', (req, res) => {
     res.render('signup_success', { messages: messages });
