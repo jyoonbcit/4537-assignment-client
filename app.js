@@ -2,11 +2,6 @@
 const messages = require('./en/lang/messages/user');
 const express = require('express');
 const cookieParser = require('cookie-parser');
-const app = express();
-app.use(cookieParser());
-app.use(express.json());
-app.use(express.urlencoded({ extended: true }));
-app.set('view engine', 'ejs');
 // TODO: For hashing passwords in the database
 const bcrypt = require('bcrypt');
 const jwt = require('jsonwebtoken');
@@ -16,6 +11,39 @@ const mongoose = require('mongoose');
 // TODO: Setup environment variables
 const dotenv = require('dotenv');
 dotenv.config();
+
+const app = express();
+
+
+
+
+const attachUserToViews = async (req, res, next) => {
+    console.log("Middleware executing..."); // Debug log
+    try {
+        const token = req.cookies.jwt;
+        if (token) {
+            const decoded = jwt.verify(token, process.env.SESSION_SECRET);
+            const user = await usersModel.findOne({ email: decoded.email }).exec();
+            res.locals.user = user;
+            console.log("User found:", user); // Debug log
+        } else {
+            res.locals.user = null;
+            console.log("No user token found."); // Debug log
+        }
+    } catch (error) {
+        console.error('Error verifying JWT or fetching user:', error);
+        res.locals.user = null;
+    }
+    next();
+};
+
+
+// Middleware setup
+app.use(cookieParser());
+app.use(express.json());
+app.use(express.urlencoded({ extended: true }));
+app.set('view engine', 'ejs');
+app.use(attachUserToViews);
 
 
 // GET requests
@@ -32,16 +60,16 @@ app.get('/login', (req, res) => {
 });
 
 app.get('/members', async (req, res) => {
-    res.render('members', { 
-        title: 'Members', 
+    res.render('members', {
+        title: 'Members',
         user: await usersModel.findOne({ email: jwt.verify(req.cookies.jwt, process.env.SESSION_SECRET).email }).exec()
     });
 });
 
 // Mostly generated using ChatGPT
 app.get('/admin', async (req, res) => {
-    res.render('admin', { 
-        title: 'Admin', 
+    res.render('admin', {
+        title: 'Admin',
         isAdmin: req.cookies.jwt ? jwt.verify(req.cookies.jwt, process.env.SESSION_SECRET).isAdmin : false,
         users: await usersModel.find({}).exec()
     });
