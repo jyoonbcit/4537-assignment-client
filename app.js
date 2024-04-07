@@ -59,6 +59,12 @@ app.get('/login', (req, res) => {
     res.render('login', { title: 'Login' });
 });
 
+app.get('/logout', (req, res) => {
+    res.clearCookie('jwt');
+    res.redirect('/');
+});
+
+
 app.get('/members', async (req, res) => {
     res.render('members', {
         title: 'Members',
