@@ -15,6 +15,7 @@ const methodOverride = require('method-override');
 
 
 const app = express();
+app.use(express.static('public'));
 
 
 // Middleware to log HTTP method

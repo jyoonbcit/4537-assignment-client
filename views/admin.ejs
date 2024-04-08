@@ -2,8 +2,7 @@
 
     <% if (isAdmin) { %>
         <div class="table-responsive">
-            <form id="userActionForm" action="/updateUserRole" method="post">
-                <input type="hidden" id="methodInput" name="_method" value="">
+            <form method = "POST" action = "/updateUserRole?_method=PUT" id="userActionForm">
                 <table class="table">
                     <thead class="table-dark">
                         <tr>
@@ -36,30 +35,27 @@
                             <% }); %>
                     </tbody>
                 </table>
-                <input type="hidden" name="_method" value="put">
-                <button type="button" onclick="updateRole()">Update Selected Users to Admin</button>
-                <button type="button" onclick="deleteUser()">Delete Selected Users</button>
+                <button type="submit" id="updateButton">Update Selected Users to Admin</button>
+                <button type="submit" id="deleteButton">Delete Selected Users</button>
+            </form>
         </div>
+        <script src="/js/formActions.js"></script>
         <% } %>
 
             <%- include('templates/footer') %>
 
-                <script>
-                    function updateRole() {
-                        const form = document.getElementById('userActionForm');
-                        const currentMethod = form.method;
-                        console.log("Current method:", currentMethod);
-                        form.method = 'put'; // Set the method to 'put'
-                        console.log("New method:", form.method);
-                        form.submit();
-                    }
+                <!-- <script>
 
-                    function deleteUser() {
-                        const form = document.getElementById('userActionForm');
-                        const currentMethod = form.method;
-                        console.log("Current method:", currentMethod);
-                        form.method = 'delete'; // Set the method to 'delete'
-                        console.log("New method:", form.method);
+                    document.getElementById('updateButton').addEventListener('click', function() {
+                        let form = document.getElementById('userActionForm');
+                        form.action = '/updateUserRole?_method=PUT';
                         form.submit();
-                    }
-                </script>
+                    })
+
+                    document.getElementById('deleteButton').addEventListener('click', function() {
+        var form = document.getElementById('userActionForm');
+        form.action = '/deleteUser?_method=DELETE';
+        form.submit();
+    });
+
+                </script> -->
