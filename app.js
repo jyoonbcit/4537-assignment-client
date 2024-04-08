@@ -98,11 +98,18 @@ app.get('/login', (req, res) => {
     res.render('login', { title: 'Login' });
 });
 
-app.get('/logout', (req, res) => {
-    usersModel.getLogoutPage++;
-    usersModel.apiRequests++;
-    res.clearCookie('jwt');
-    res.redirect('/');
+app.get('/logout', isAuthenticated, async (req, res) => {
+    try {
+        // Increment counters
+        req.user.getLogoutPage++;
+        req.user.apiRequests++;
+        await req.user.save(); // Save the changes to the user document
+        res.clearCookie('jwt');
+        res.redirect('/');
+    } catch (error) {
+        console.error(error);
+        res.status(500).json({ error: messages.internalServerError + error.message });
+    }
 });
 
 app.get('/updateUserRole', (req, res) => {
@@ -112,23 +119,41 @@ app.get('/updateUserRole', (req, res) => {
 
 // Use isAuthenticated middleware for routes that require authentication
 app.get('/members', isAuthenticated, async (req, res) => {
-    usersModel.getMembersPage++;
-    usersModel.apiRequests++;
-    res.render('members', {
-        title: 'Members',
-        user: req.user // Now directly using req.user set by the middleware
-    });
+    try {
+        // Increment counters
+        req.user.getMembersPage++;
+        req.user.apiRequests++;
+        await req.user.save(); // Save the changes to the user document
+        res.render('members', {
+            title: 'Members',
+            user: req.user // Now directly using req.user set by the middleware
+        });
+    } catch (error) {
+        console.error(error);
+        res.status(500).json({ error: messages.internalServerError + error.message });
+    }
 });
 
 // Use both isAuthenticated and isAdmin middleware for the admin route
 app.get('/admin', isAuthenticated, isAdmin, async (req, res) => {
-    usersModel.getAdminPage++;
-    usersModel.apiRequests++;
-    res.render('admin', {
-        title: 'Admin',
-        isAdmin: req.user.isAdmin, // req.user is guaranteed to be present and an admin
-        users: await usersModel.find({}).exec()
-    });
+    try {
+        // Increment counters
+        req.user.getAdminPage++;
+        req.user.apiRequests++;
+        await req.user.save(); // Save the changes to the user document
+
+
+        // Render the admin page template with the processed user data
+        res.render('admin', {
+            title: 'Admin',
+            isAdmin: req.user.isAdmin, // req.user is guaranteed to be present and an admin
+            users: await usersModel.find({}).exec()
+        });
+    } catch (error) {
+        console.error(error);
+        res.status(500).json({ error: messages.internalServerError + error.message });
+
+    };
 });
 
 
@@ -168,8 +193,8 @@ app.put('/updateUserRole', isAuthenticated, isAdmin, async (req, res) => {
             { _id: { $in: selectedUserIds } }, // Update all users where ID is in selectedUserIds array
             { isAdmin: true } // Set isAdmin to true for selected users
         ).exec();
-        usersModel.updateUserRequests++;
-        usersModel.apiRequests++;
+        req.user.updateUserRequests++;
+        req.user.apiRequests++;
         res.redirect('/admin'); // Redirect back to admin page after updating roles
 
     } catch (error) {
@@ -187,8 +212,8 @@ app.delete('/deleteUser', isAuthenticated, isAdmin, async (req, res) => {
         await usersModel.deleteMany(
             { _id: { $in: selectedUserIds } } // Delete all users where ID is in selectedUserIds array
         ).exec();
-        usersModel.deleteUserRequests++;
-        usersModel.apiRequests++;
+        req.user.deleteUserRequests++;
+        req.user.apiRequests++;
         res.redirect('/admin'); // Redirect back to admin page after deleting users
 
     } catch (error) {
@@ -200,11 +225,10 @@ app.delete('/deleteUser', isAuthenticated, isAdmin, async (req, res) => {
 // POST requests
 app.post('/signup', async (req, res) => {
     // TODO: Validation
-    const { username, email, password, method, url } = req.body;
+    const { username, email, password, } = req.body;
     const sanitizedUsername = sanitize(username);
     const sanitizedEmail = sanitize(email);
     const sanitizedPassword = sanitize(password);
-    const endpoint = url;
 
     try {
         const existingUser = await usersModel.findOne({ user: sanitizedUsername }).exec();
@@ -234,8 +258,6 @@ app.post('/signup', async (req, res) => {
             getAdminPage: 0,
             getMembersPage: 0,
             getLogoutPage: 0,
-            getEndpoint: method,
-            getMethod: endpoint,
         });
         newUser.signupRequests++;
         newUser.apiRequests++;

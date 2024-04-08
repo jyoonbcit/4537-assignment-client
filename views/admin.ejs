@@ -52,22 +52,52 @@
                     </thead>
                     <tbody>
                         <% users.forEach(user=> { %>
-                            <tr>
-                                <td>
-                                    <%= user.username %>
-                                </td>
-                                <td>
-                                    <%= user.getMethod %>
-                                </td>
-                                <td>
-                                    <%= user.getEndpoint %>
-                                </td>
-                                <td>
-                                    <%= user.getAdminPage %>
-                                </td>
-                            </tr>
+                            <% ['GET|/admin', 'GET|/members' , 'GET|/logout' , 'POST|/callAPI' , 'POST|/login'
+                                , 'POST|/signup' , 'PUT|/updateUserRole' , 'DELETE|/deleteUserRole' ].forEach(route=> {
+                                %>
+                                <% const [method, endpoint]=route.split('|')%>
 
-                            <% }); %>
+                                    <tr>
+                                        <td>
+                                            <%= user.username %>
+                                        </td>
+                                        <td>
+                                            <%= method %>
+                                        </td>
+                                        <td>
+                                            <%= endpoint %>
+                                        </td>
+                                        <td>
+                                            <% if (endpoint==='/admin' ) { %>
+                                                <%= user.getAdminPage %>
+                                                    <% } else if (endpoint==='/members' ) { %>
+                                                        <%= user.getMembersPage %>
+                                                            <% } else if (endpoint==='/logout' ) { %>
+                                                                <%= user.getLogoutPage %>
+                                                                    <% } else if (endpoint==='/callAPI' ) { %>
+                                                                        <%= user.callAPIRequests %>
+                                                                            <% } else if (endpoint==='/login' ) { %>
+                                                                                <%= user.loginRequests %>
+                                                                                    <% } else if (endpoint==='/signup' )
+                                                                                        { %>
+                                                                                        <%= user.signupRequests %>
+                                                                                            <% } else if
+                                                                                                (endpoint==='/updateUserRole'
+                                                                                                ) { %>
+                                                                                                <%= user.updateUserRequests
+                                                                                                    %>
+                                                                                                    <% } else if
+                                                                                                        (endpoint==='/deleteUserRole'
+                                                                                                        ) { %>
+                                                                                                        <%= user.deleteUserRequests
+                                                                                                            %>
+                                                                                                            <% } %>
+                                        </td>
+                                    </tr>
+                                    <% }); %>
+                                        <% }); %>
+
+
                     </tbody>
                 </table>
         </div>
