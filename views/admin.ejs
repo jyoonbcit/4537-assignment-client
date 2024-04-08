@@ -2,35 +2,64 @@
 
     <% if (isAdmin) { %>
         <div class="table-responsive">
-            <table class="table">
-                <thead class="table-dark">
-                    <tr>
-                        <th scope="col">Name</th>
-                        <th scope="col">Email</th>
-                        <th scope="col">API Requests</th>
-                        <th scope="col">Admin Status</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    <% users.forEach(user=> { %>
+            <form id="userActionForm" action="/updateUserRole" method="post">
+                <input type="hidden" id="methodInput" name="_method" value="">
+                <table class="table">
+                    <thead class="table-dark">
                         <tr>
-                            <td>
-                                <%= user.username %>
-                            </td>
-                            <td>
-                                <%= user.email %>
-                            </td>
-                            <td>
-                                <%= user.apiRequests %>
-                            </td>
-                            <td>
-                                <%= user.isAdmin ? 'Yes' : 'No' %>
-                            </td>
+                            <th scope="col">Name</th>
+                            <th scope="col">Email</th>
+                            <th scope="col">API Requests</th>
+                            <th scope="col">Admin Status</th>
+                            <th scope="col">Select</th>
                         </tr>
-                        <% }); %>
-                </tbody>
-            </table>
+                    </thead>
+                    <tbody>
+                        <% users.forEach(user=> { %>
+                            <tr>
+                                <td>
+                                    <%= user.username %>
+                                </td>
+                                <td>
+                                    <%= user.email %>
+                                </td>
+                                <td>
+                                    <%= user.apiRequests %>
+                                </td>
+                                <td>
+                                    <%= user.isAdmin ? 'Yes' : 'No' %>
+                                </td>
+                                <td>
+                                    <input type="checkbox" name="selectedUsers" value="<%= user._id %>">
+                                </td>
+                            </tr>
+                            <% }); %>
+                    </tbody>
+                </table>
+                <input type="hidden" name="_method" value="put">
+                <button type="button" onclick="updateRole()">Update Selected Users to Admin</button>
+                <button type="button" onclick="deleteUser()">Delete Selected Users</button>
         </div>
         <% } %>
 
             <%- include('templates/footer') %>
+
+                <script>
+                    function updateRole() {
+                        const form = document.getElementById('userActionForm');
+                        const currentMethod = form.method;
+                        console.log("Current method:", currentMethod);
+                        form.method = 'put'; // Set the method to 'put'
+                        console.log("New method:", form.method);
+                        form.submit();
+                    }
+
+                    function deleteUser() {
+                        const form = document.getElementById('userActionForm');
+                        const currentMethod = form.method;
+                        console.log("Current method:", currentMethod);
+                        form.method = 'delete'; // Set the method to 'delete'
+                        console.log("New method:", form.method);
+                        form.submit();
+                    }
+                </script>

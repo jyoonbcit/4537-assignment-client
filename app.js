@@ -11,11 +11,20 @@ const mongoose = require('mongoose');
 // TODO: Setup environment variables
 const dotenv = require('dotenv');
 dotenv.config();
+const methodOverride = require('method-override');
+
 
 const app = express();
 
 
+// Middleware to log HTTP method
+const logRequestMethod = (req, res, next) => {
+    console.log(`Received ${req.method} request for ${req.url}`);
+    next(); // Call next middleware/route handler
+};
 
+// Add middleware to log HTTP method
+app.use(logRequestMethod);
 
 const attachUserToViews = async (req, res, next) => {
     console.log("Middleware executing..."); // Debug log
@@ -70,6 +79,7 @@ const isAdmin = (req, res, next) => {
 app.use(cookieParser());
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
+app.use(methodOverride('_method')); // Use method-override middleware
 app.set('view engine', 'ejs');
 app.use(attachUserToViews);
 
@@ -90,6 +100,10 @@ app.get('/login', (req, res) => {
 app.get('/logout', (req, res) => {
     res.clearCookie('jwt');
     res.redirect('/');
+});
+
+app.get('/updateUserRole', (req, res) => {
+
 });
 
 
@@ -137,6 +151,40 @@ app.get('/getAllUserAPI', async (req, res) => {
 });
 
 
+//PUT request
+app.put('/updateUserRole', isAuthenticated, isAdmin, async (req, res) => {
+    const selectedUserIds = req.body.selectedUsers;
+    console.log(selectedUserIds);
+    try {
+        // Update roles for selected users
+        await usersModel.updateMany(
+            { _id: { $in: selectedUserIds } }, // Update all users where ID is in selectedUserIds array
+            { isAdmin: true } // Set isAdmin to true for selected users
+        ).exec();
+        res.redirect('/admin'); // Redirect back to admin page after updating roles
+
+    } catch (error) {
+        console.error(error);
+        res.status(500).json({ error: messages.userToggleError + error.message });
+    }
+});
+
+//DELETE request
+app.delete('/deleteUser', isAuthenticated, isAdmin, async (req, res) => {
+    const selectedUserIds = req.body.selectedUsers;
+    console.log(selectedUserIds);
+    try {
+        // Delete selected users
+        await usersModel.deleteMany(
+            { _id: { $in: selectedUserIds } } // Delete all users where ID is in selectedUserIds array
+        ).exec();
+        res.redirect('/admin'); // Redirect back to admin page after deleting users
+
+    } catch (error) {
+        console.error(error);
+        res.status(500).json({ error: messages.userDeleteError + error.message });
+    }
+});
 
 // POST requests
 app.post('/signup', async (req, res) => {
