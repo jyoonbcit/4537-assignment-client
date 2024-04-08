@@ -195,6 +195,8 @@ app.put('/updateUserRole', isAuthenticated, isAdmin, async (req, res) => {
         ).exec();
         req.user.updateUserRequests++;
         req.user.apiRequests++;
+        await req.user.save(); // Save the changes to the user document
+
         res.redirect('/admin'); // Redirect back to admin page after updating roles
 
     } catch (error) {
@@ -214,6 +216,8 @@ app.delete('/deleteUser', isAuthenticated, isAdmin, async (req, res) => {
         ).exec();
         req.user.deleteUserRequests++;
         req.user.apiRequests++;
+        await req.user.save(); // Save the changes to the user document
+
         res.redirect('/admin'); // Redirect back to admin page after deleting users
 
     } catch (error) {
