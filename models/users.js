@@ -14,9 +14,6 @@ const usersSchema = new mongoose.Schema({
     getAdminPage: Number,
     getMembersPage: Number,
     getLogoutPage: Number,
-    getMethod: String,
-    getEndpoint: String,
-
 });
 const usersModel = mongoose.model('users', usersSchema);
 module.exports = usersModel;
