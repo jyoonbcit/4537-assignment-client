@@ -99,6 +99,8 @@ app.get('/login', (req, res) => {
 });
 
 app.get('/logout', (req, res) => {
+    usersModel.getLogoutPage++;
+    usersModel.apiRequests++;
     res.clearCookie('jwt');
     res.redirect('/');
 });
@@ -110,6 +112,8 @@ app.get('/updateUserRole', (req, res) => {
 
 // Use isAuthenticated middleware for routes that require authentication
 app.get('/members', isAuthenticated, async (req, res) => {
+    usersModel.getMembersPage++;
+    usersModel.apiRequests++;
     res.render('members', {
         title: 'Members',
         user: req.user // Now directly using req.user set by the middleware
@@ -118,6 +122,8 @@ app.get('/members', isAuthenticated, async (req, res) => {
 
 // Use both isAuthenticated and isAdmin middleware for the admin route
 app.get('/admin', isAuthenticated, isAdmin, async (req, res) => {
+    usersModel.getAdminPage++;
+    usersModel.apiRequests++;
     res.render('admin', {
         title: 'Admin',
         isAdmin: req.user.isAdmin, // req.user is guaranteed to be present and an admin
@@ -162,6 +168,8 @@ app.put('/updateUserRole', isAuthenticated, isAdmin, async (req, res) => {
             { _id: { $in: selectedUserIds } }, // Update all users where ID is in selectedUserIds array
             { isAdmin: true } // Set isAdmin to true for selected users
         ).exec();
+        usersModel.updateUserRequests++;
+        usersModel.apiRequests++;
         res.redirect('/admin'); // Redirect back to admin page after updating roles
 
     } catch (error) {
@@ -179,6 +187,8 @@ app.delete('/deleteUser', isAuthenticated, isAdmin, async (req, res) => {
         await usersModel.deleteMany(
             { _id: { $in: selectedUserIds } } // Delete all users where ID is in selectedUserIds array
         ).exec();
+        usersModel.deleteUserRequests++;
+        usersModel.apiRequests++;
         res.redirect('/admin'); // Redirect back to admin page after deleting users
 
     } catch (error) {
@@ -190,10 +200,11 @@ app.delete('/deleteUser', isAuthenticated, isAdmin, async (req, res) => {
 // POST requests
 app.post('/signup', async (req, res) => {
     // TODO: Validation
-    const { username, email, password } = req.body;
+    const { username, email, password, method, url } = req.body;
     const sanitizedUsername = sanitize(username);
     const sanitizedEmail = sanitize(email);
     const sanitizedPassword = sanitize(password);
+    const endpoint = url;
 
     try {
         const existingUser = await usersModel.findOne({ user: sanitizedUsername }).exec();
@@ -214,8 +225,20 @@ app.post('/signup', async (req, res) => {
             email: sanitizedEmail,
             password: hashedPassword,
             isAdmin: false,
-            apiRequests: 0
+            apiRequests: 0,
+            callAPIRequests: 0,
+            updateUserRequests: 0,
+            deleteUserRequests: 0,
+            loginRequests: 0,
+            signupRequests: 0,
+            getAdminPage: 0,
+            getMembersPage: 0,
+            getLogoutPage: 0,
+            getEndpoint: method,
+            getMethod: endpoint,
         });
+        newUser.signupRequests++;
+        newUser.apiRequests++;
         await newUser.save();
         res.redirect('/signup_success');
     } catch (error) {
@@ -248,6 +271,8 @@ app.post('/login', async (req, res) => {
                 isAdmin: user.isAdmin
             }, process.env.SESSION_SECRET, { expiresIn: '1h' }); // Token expires in 1 hour
 
+            user.loginRequests++;
+            user.apiRequests++;
             // Set JWT token as a cookie
             res.cookie('jwt', token, { httpOnly: true, maxAge: 3600000 }); // Max age 1 hour
             console.log(user.isAdmin);
@@ -289,6 +314,7 @@ app.post('/callAPI', async (req, res) => {
             }
         });
         const jsonOutput = await output.json();
+        user.callAPIRequests++;
         user.apiRequests++;
         await user.save();
         res.json({ jsonOutput });

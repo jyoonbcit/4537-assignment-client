@@ -2,7 +2,7 @@
 
     <% if (isAdmin) { %>
         <div class="table-responsive">
-            <form method = "POST" action = "/updateUserRole?_method=PUT" id="userActionForm">
+            <form method="POST" action="/updateUserRole?_method=PUT" id="userActionForm">
                 <table class="table">
                     <thead class="table-dark">
                         <tr>
@@ -35,9 +35,41 @@
                             <% }); %>
                     </tbody>
                 </table>
-                <button type="submit" id="updateButton">Update Selected Users to Admin</button>
-                <button type="submit" id="deleteButton">Delete Selected Users</button>
-            </form>
+                <input type="hidden" name="_method" value="put">
+                <button type="button" onclick="updateRole()">Update Selected Users to Admin</button>
+                <button type="button" onclick="deleteUser()">Delete Selected Users</button>
+                <br>
+                <br>
+                <!-- Table for API requests -->
+                <table class="table">
+                    <thead class="table-dark">
+                        <tr>
+                            <th scope="col">Name</th>
+                            <th scope="col">Method</th>
+                            <th scope="col">EndPoint</th>
+                            <th scope="col">Total Requests</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <% users.forEach(user=> { %>
+                            <tr>
+                                <td>
+                                    <%= user.username %>
+                                </td>
+                                <td>
+                                    <%= user.getMethod %>
+                                </td>
+                                <td>
+                                    <%= user.getEndpoint %>
+                                </td>
+                                <td>
+                                    <%= user.getAdminPage %>
+                                </td>
+                            </tr>
+
+                            <% }); %>
+                    </tbody>
+                </table>
         </div>
         <script src="/js/formActions.js"></script>
         <% } %>
