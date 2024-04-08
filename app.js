@@ -299,6 +299,7 @@ app.post('/login', async (req, res) => {
 
             user.loginRequests++;
             user.apiRequests++;
+            await user.save(); // Save the changes to the user document
             // Set JWT token as a cookie
             res.cookie('jwt', token, { httpOnly: true, maxAge: 3600000 }); // Max age 1 hour
             console.log(user.isAdmin);
