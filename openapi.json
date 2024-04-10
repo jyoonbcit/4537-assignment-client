@@ -1,0 +1,117 @@
+openapi: 3.0.0
+info:
+  title: Paraphraser API
+  description: API for managing user authentication, roles, and profiles, including signup, login, logout, and role updates. For our Paraphraser app.
+  version: 1.0.0
+servers:
+  - url: https://kind-ruby-python-boot.cyclic.app/
+    description: Development server
+paths:
+  /signup:
+    post:
+      summary: Registers a new user.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UserCredentials'
+      responses:
+        '200':
+          description: User registered successfully.
+        '400':
+          description: Error in registration data.
+  /login:
+    post:
+      summary: Authenticates a user and returns a token.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UserLogin'
+      responses:
+        '200':
+          description: User authenticated successfully.
+        '401':
+          description: Authentication failed.
+  /logout:
+    get:
+      summary: Logs out a user by clearing the token cookie.
+      responses:
+        '200':
+          description: User logged out successfully.
+  /admin:
+    get:
+      summary: Displays admin dashboard. Requires admin privileges.
+      responses:
+        '200':
+          description: Admin dashboard page.
+        '403':
+          description: Access denied.
+  /getAllUserAPI:
+    get:
+      summary: Gets all user data. Requires admin privileges.
+      responses:
+        '200':
+          description: Successfully retrieved all users data.
+        '403':
+          description: Access denied.
+  /updateUserRole:
+    put:
+      summary: Updates the role of selected users to admin. Requires admin privileges.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                selectedUsers:
+                  type: array
+                  items:
+                    type: string
+      responses:
+        '200':
+          description: User roles updated successfully.
+        '500':
+          description: Error updating user roles.
+  /deleteUser:
+    delete:
+      summary: Deletes selected users. Requires admin privileges.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                selectedUsers:
+                  type: array
+                  items:
+                    type: string
+      responses:
+        '200':
+          description: Users deleted successfully.
+        '500':
+          description: Error deleting users.
+components:
+  schemas:
+    UserCredentials:
+      type: object
+      properties:
+        username:
+          type: string
+        email:
+          type: string
+          format: email
+        password:
+          type: string
+    UserLogin:
+      type: object
+      properties:
+        email:
+          type: string
+          format: email
+        password:
+          type: string
