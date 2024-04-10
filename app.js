@@ -50,6 +50,7 @@ const attachUserToViews = async (req, res, next) => {
 const isAuthenticated = async (req, res, next) => {
     try {
         const token = req.cookies.jwt;
+        console.log('Authenticating user, token found:', token);
         if (token) {
             const decoded = jwt.verify(token, process.env.SESSION_SECRET);
             const user = await usersModel.findOne({ email: decoded.email }).exec();
@@ -278,48 +279,42 @@ app.post('/signup', async (req, res) => {
 
 app.post('/login', async (req, res) => {
     const { email, password } = req.body;
-    const sanitizedEmail = sanitize(email);
-    const sanitizedPassword = sanitize(password);
+    console.log(`Client attempting to login with email: ${email}`); // Log the attempt
 
     try {
-        const user = await usersModel.findOne({ email: sanitizedEmail }).exec();
-        console.log(user);
-        if (user === null) {
-            res.send(`
-            <h1> ${messages.userNotFound} </h1>
-            <a href='/login'> ${messages.tryAgain} </a>
-        `);
-        } else if (bcrypt.compareSync(sanitizedPassword, user?.password)) {
-            // If password matches, generate JWT token
-            const token = jwt.sign({
-                email: sanitizedEmail,
-                username: user.username,
-                isAdmin: user.isAdmin
-            }, process.env.SESSION_SECRET, { expiresIn: '1h' }); // Token expires in 1 hour
+        console.log(`Sending request to server for email: ${email}`); // Log the fetch operation
+        const response = await fetch('http://localhost:4000/login', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ email, password })
+        });
 
-            user.loginRequests++;
-            user.apiRequests++;
-            await user.save(); // Save the changes to the user document
-            // Set JWT token as a cookie
-            res.cookie('jwt', token, { httpOnly: true, maxAge: 3600000 }); // Max age 1 hour
-            console.log(user.isAdmin);
-            if (user.isAdmin) {
-                res.redirect('/admin');
-            } else {
-                res.redirect('/members'); // redirect to members page or change to whatever page you want
-            }
+        console.log(`Received response from server for email: ${email}`); // Log response reception
+
+        // Checking if the server response indicates a redirect or incorrect password
+        if (response.redirected) {
+            console.log(`Redirecting client to: ${response.url}`); // Log redirection
+            res.redirect(response.url);
         } else {
-            res.send(`
-            <h1> ${messages.incorrectPassword} </h1>
-            <a href='/login'> ${messages.tryAgain} </a>
-        `);
+            // Attempt to parse the response to handle it more granularly
+            const responseBody = await response.text();
+
+            // Log and send specific messages based on the server's response
+            if (responseBody.includes(messages.incorrectPassword)) {
+                console.log(`Incorrect password for email: ${email}`); // Log incorrect password case
+                res.send(`
+                    <h1> ${messages.incorrectPassword} </h1>
+                    <a href='/login'> ${messages.tryAgain} </a>
+                `);
+            } else {
+                // For other cases, send back whatever response the server provided
+                console.log(`Sending server's response back to client for email: ${email}`, responseBody); // Log the body being sent back
+                res.send(responseBody);
+            }
         }
     } catch (error) {
-        console.log(error);
-        res.send(`
-        <h1> ${messages.loginError} </h1>
-        `)
-        return;
+        console.error(`Login error for email: ${email}`, error); // Log any errors
+        res.status(500).send('An error occurred while logging in');
     }
 });
 
